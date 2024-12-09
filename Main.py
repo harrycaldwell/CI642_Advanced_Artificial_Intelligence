@@ -34,13 +34,7 @@ disc = make_discriminator_model()
 checkpoint_dir = './training_checkpoints'
 checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
 
-# Create the checkpoint object after the models are defined
-checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
-                                 discriminator_optimizer=discriminator_optimizer,
-                                 generator=gen,
-                                 discriminator=disc)
-
-# Loading and preparing the dataset 
+# Loading and preparing the dataset
 (train_images, train_labels), (_, _) = tf.keras.datasets.fashion_mnist.load_data()
 train_images = train_images.reshape((train_images.shape[0], 28, 28, 1)).astype('float32')
 train_images = (train_images - 127.5) / 127.5  # This normalizes the images as [-1, 1]
@@ -52,7 +46,7 @@ BATCH_SIZE = 256
 train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
 
 # Loss functions
-cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+cross_entropy = tf.keras.losses.BinaryCrossentropy()
 
 def discriminator_loss(real_output, fake_output):
     real_loss = cross_entropy(tf.ones_like(real_output), real_output)
@@ -67,10 +61,16 @@ def generator_loss(fake_output):
 generator_optimizer = tf.keras.optimizers.Adam(1e-4)
 discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 
+# Create the checkpoint object after the models are defined
+checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
+                                 discriminator_optimizer=discriminator_optimizer,
+                                 generator=gen,
+                                 discriminator=disc)
+
 # Define training loop
-EPOCHS = 100
+EPOCHS = 60
 noise_dim = 100
-images_to_gen = 40
+images_to_gen = 20
 
 # Setting the seed (random)
 seed = tf.random.normal([images_to_gen, noise_dim])
